@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <algorithm>
 
 #include "base_virus.h"
 
@@ -38,17 +39,12 @@ public:
 	}
 	
 	void make_step(std::pair<int32_t, int32_t> coordinate) {
-		// Перевести в вектор отправить для получения действия, перевести в координату
-		//std::cout <<	"=========================================" << std::endl;
-		//std::cout << std::endl << "Tick for (" << coordinate.first << "," << coordinate.second << ")" << std::endl;
 		
 		int32_t x = coordinate.first;
 		int32_t y = coordinate.second;
 		typedef std::pair<int32_t, int32_t> coord;
 
 		std::vector<BaseVirus*> env;
-
-		//print();
 
 		BaseVirus padding(BaseVirus::PADDING_ID);
 		for (int32_t i = -1; i <= 1; i++) {
@@ -64,13 +60,8 @@ public:
 		if (action.first == BaseVirus::Actions::None)
 			return;
 
-		//std::cout << std::endl;
-		//print();
-
 		y += action.second/(3) - 1;
 		x += action.second%(3) - 1;
-
-		//std::cout << action.second << " Having (" << x << "," << y << ")" << std::endl;
 
 		if (m_gamefield[y][x] == nullptr) {
 			m_gamefield[y][x] = m_gamefield[coordinate.first][coordinate.second];
@@ -93,11 +84,27 @@ public:
 		}
 	}
 
+	bool is_finished() {
+		for (uint32_t i = 0; i < m_height; i++)
+			for (uint32_t j = 0; j < m_width; j++)
+				if (m_gamefield[i][j] == nullptr)
+					return false;
+		return true;
+	}
+
+	int32_t winner() {
+		auto res = std::max_element(players_board.begin(), players_board.end(),
+															  [] (auto const& lhs, auto const& rhs) {
+															 		return lhs.second.size() > rhs.second.size();
+															  });
+		return res->first;
+	}
+
 private:
 	bool is_correct(int32_t y, int32_t x) {
 		return y >= 0 && y < m_height && x >= 0 && x < m_width;
 	}
-
+	
 	std::map<int32_t, std::vector<std::pair<int32_t, int32_t>>> players_board;
 
 	BaseVirus*** m_gamefield;
